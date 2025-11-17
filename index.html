@@ -38,15 +38,13 @@
       margin: 0 0 20px 0;
       font-size: 22px;
       font-weight: 600;
-      color: #cc0000; /* Veolia red */
+      color: #cc0000;
     }
 
-    /* สไตล์สำหรับ input fields ทั้งหมด */
     .glass-box input[type="text"],
     .glass-box input[type="password"] {
-      /* เพิ่ม box-sizing: border-box; ตรงนี้ครับ */
       box-sizing: border-box; 
-      width: 100%; /* เปลี่ยนเป็น 100% เพื่อให้เต็มความกว้างของกล่องแม่ */
+      width: 100%; 
       padding: 12px;
       border: none;
       border-radius: 10px;
@@ -65,7 +63,7 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      background: #cc0000; /* Veolia red */
+      background: #cc0000; 
       color: white;
       font-weight: bold;
       transition: 0.2s;
@@ -80,37 +78,54 @@
 <body>
 
   <div class="glass-box">
-    <!-- โลโก้ Veolia -->
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Veolia_logo.svg/1024px-Veolia_logo.svg.png" alt="Veolia Logo" />
 
     <h2>เข้าสู่ระบบ</h2>
 
-    <!-- เพิ่มช่องใส่ชื่อผู้ใช้ -->
     <input type="text" id="username" placeholder="ชื่อผู้ใช้">
-    
-    <!-- ช่องใส่รหัสผ่าน -->
     <input type="password" id="password" placeholder="รหัสผ่าน">
     
-    <button onclick="checkLogin()">เข้าสู่ระบบ</button>
+    <button id="loginButton">เข้าสู่ระบบ</button>
   </div>
 
   <script>
-    function checkLogin() {
-      // กำหนดชื่อผู้ใช้และรหัสผ่านที่ถูกต้อง
-      const correctUsername = "admin"; // ← ชื่อผู้ใช้ที่ต้องการ
-      const correctPassword = "7890";  // ← รหัสผ่านที่ต้องการ
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      return hashHex;
+    }
 
-      // รับค่าจาก input fields
-      const inputUsername = document.getElementById("username").value;
+    async function checkLogin() {
+      const correctUsernameHash = "4abd190e0605e71e2f79c8c79937a70305b807593b979dd0568f4ab444ea0639"; 
+      
+      const correctPasswordHash = "9af15b336e6a9619928537df30b2e6a2376569fcf9d7e773eccede65606529a0"; 
+      
+
+      const inputUsername = document.getElementById("username").value.trim();
       const inputPassword = document.getElementById("password").value;
 
-      // ตรวจสอบทั้งชื่อผู้ใช้และรหัสผ่าน
-      if (inputUsername === correctUsername && inputPassword === correctPassword) {
-        window.location.href = "https://naninok.github.io//"; // เปลี่ยน URL ปลายทางตามต้องการ
+      const inputUsernameHash = await sha256(inputUsername);
+      const inputPasswordHash = await sha256(inputPassword);
+
+      if (inputUsernameHash === correctUsernameHash && inputPasswordHash === correctPasswordHash) {
+        window.location.href = "https://naninok.github.io//";
       } else {
         alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
       }
     }
+
+    
+    document.getElementById("loginButton").addEventListener("click", checkLogin);
+
+  
+    document.getElementById("username").addEventListener("keyup", function(e) {
+      if (e.key === "Enter") checkLogin();
+    });
+    document.getElementById("password").addEventListener("keyup", function(e) {
+      if (e.key === "Enter") checkLogin();
+    });
   </script>
 
 </body>
